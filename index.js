@@ -12,7 +12,7 @@ async function load_data() {
         document.getElementById("data-status").innerText = "Loading Titanic dataset...";
         const start = performance.now();
 
-        const dataset_url = "./titanic.csv";
+        const dataset_url = "https://fortisvar.github.io/Narrative-Visualization/titanic.csv";
         data = await d3.csv(dataset_url);
 
         console.log(data);
