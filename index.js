@@ -12,7 +12,7 @@ async function load_data() {
         document.getElementById("data-status").innerText = "Loading Titanic dataset...";
         const start = performance.now();
 
-        const dataset_url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv";
+        const dataset_url = "./titanic.csv";
         data = await d3.csv(dataset_url);
 
         console.log(data);
