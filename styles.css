@@ -1,0 +1,64 @@
+body {
+    font-family: "JetBrains Mono", monospace;
+    color: #4b4b4b;
+    background: white;
+    width: 1000px;
+    margin: auto;
+    margin-top: 100px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 50px;
+}
+
+h2 {
+    text-align: center;
+    font-size: 30px;
+}
+
+svg {
+    display: block;
+    width: 100%;
+    height: 500px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background: #f3f3f3;
+    border-radius: 50px;
+}
+
+#total-passengers {
+    fill: dimgrey;
+    stroke: #434343;
+    stroke-width: 5px;
+}
+
+#total-survivors {
+    fill: cornflowerblue;
+    stroke: #2f4670;
+    stroke-width: 5px;
+}
+
+#total-deaths {
+    fill: crimson;
+    stroke: #680b1d;
+    stroke-width: 5px;
+}
+
+#total-passengers-text {
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: #434343;
+}
+
+#total-survivors-text {
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: #2f4670;
+}
+
+#total-deaths-text {
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: #680b1d;
+}
