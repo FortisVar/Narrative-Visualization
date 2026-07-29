@@ -12,7 +12,7 @@ async function load_data() {
         document.getElementById("data-status").innerText = "Loading Titanic dataset...";
         const start = performance.now();
 
-        const dataset_url = "https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/titanic.csv";
+        const dataset_url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv";
         data = await d3.csv(dataset_url);
 
         console.log(data);
@@ -96,7 +96,7 @@ function render_gender_graph(data) {
     ];
 
     const labels = [
-        "Totals",
+        "Total",
         "Males",
         "Females"
     ];
