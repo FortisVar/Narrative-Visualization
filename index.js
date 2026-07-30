@@ -21,11 +21,9 @@ async function main() {
 }
 
 function filter_data(data, state) {
-    var filtered_data = data.map(d => ({...d}));
-
-
-
-    return filtered_data;
+    return data.filter(d => d.Age >= state.filter_age_min && d.Age <= state.filter_age_max)
+        .filter(d => d.Pclass === 1 && state.filter_first_class || d.Pclass === 2 && state.filter_second_class || d.Pclass === 3 && state.filter_third_class)
+        .filter(d => d.Sex === "male" && state.filter_male || d.Sex === "female" && state.filter_female);
 }
 
 function setup_controls(state, on_change) {
@@ -38,8 +36,110 @@ function setup_controls(state, on_change) {
     age_slider.addEventListener("input", event => {
         state.age_bin_size = event.target.value;
         age_num.textContent = state.age_bin_size;
-        on_change(event);
+        on_change();
     });
+
+    const max_age_slider = document.querySelector("#age-filter-max-slider");
+    const max_age_num = document.querySelector("#age-filter-max-slider-num");
+
+    const min_age_slider = document.querySelector("#age-filter-min-slider");
+    const min_age_num = document.querySelector("#age-filter-min-slider-num");
+
+
+    max_age_slider.value = state.filter_age_max;
+    max_age_num.textContent = state.filter_age_max;
+
+    max_age_slider.addEventListener("input", event => {
+        state.filter_age_max = Math.max(event.target.value, state.filter_age_min);
+        max_age_num.textContent = state.filter_age_max;
+        max_age_slider.value = state.filter_age_max;
+        on_change();
+    });
+
+    min_age_slider.value = state.filter_age_min;
+    min_age_num.textContent = state.filter_age_min;
+
+    min_age_slider.addEventListener("input", event => {
+        state.filter_age_min = Math.min(event.target.value, state.filter_age_max);
+        min_age_num.textContent = state.filter_age_min;
+        min_age_slider.value = state.filter_age_min;
+        on_change();
+    });
+
+    const first_class = document.querySelector("#first-class-filter");
+    first_class.checked = state.filter_first_class;
+
+    first_class.addEventListener("input", event => {
+        const is_checked = event.target.checked;
+        const would_uncheck_all = !is_checked && !state.filter_second_class && !state.filter_third_class;
+        if(would_uncheck_all) {
+            state.filter_first_class = 1;
+            event.target.checked = state.filter_first_class;
+        } else {
+            state.filter_first_class = is_checked;
+            on_change();
+        }
+    })
+
+    const second_class = document.querySelector("#second-class-filter");
+    second_class.checked = state.filter_second_class;
+
+    second_class.addEventListener("input", event => {
+        const is_checked = event.target.checked;
+        const would_uncheck_all = !is_checked && !state.filter_first_class && !state.filter_third_class;
+        if(would_uncheck_all) {
+            state.filter_second_class = 1;
+            event.target.checked = state.filter_second_class;
+        } else {
+            state.filter_second_class = is_checked;
+            on_change();
+        }
+    })
+
+    const third_class = document.querySelector("#third-class-filter");
+    third_class.checked = state.filter_third_class;
+
+    third_class.addEventListener("input", event => {
+        const is_checked = event.target.checked;
+        const would_uncheck_all = !is_checked && !state.filter_first_class && !state.filter_second_class;
+        if(would_uncheck_all) {
+            state.filter_third_class = 1;
+            event.target.checked = state.filter_third_class;
+        } else {
+            state.filter_third_class = is_checked;
+            on_change();
+        }
+    })
+
+    const male_filter = document.querySelector("#male-filter");
+    male_filter.checked = state.filter_male;
+
+    male_filter.addEventListener("input", event => {
+        const is_checked = event.target.checked;
+        const would_uncheck_all = !is_checked && !state.filter_female;
+        if(would_uncheck_all) {
+            state.filter_male = 1;
+            event.target.checked = state.filter_male;
+        } else {
+            state.filter_male = is_checked;
+            on_change();
+        }
+    })
+
+    const female_filter = document.querySelector("#female-filter");
+    female_filter.checked = state.filter_female;
+
+    female_filter.addEventListener("input", event => {
+        const is_checked = event.target.checked;
+        const would_uncheck_all = !is_checked && !state.filter_male;
+        if(would_uncheck_all) {
+            state.filter_female = 1;
+            event.target.checked = state.filter_female;
+        } else {
+            state.filter_female = is_checked;
+            on_change();
+        }
+    })
 }
 
 function render_graphs(data, state) {
@@ -314,6 +414,15 @@ function bin_by_age(data, bin_size) {
 }
 
 function render_age_graph(data, state) {
+    const max_age = data.reduce((a, b) => Math.max(a, b.Age), 0);
+    const min_bin = Math.ceil((max_age + 1) / 35);
+    const slider = d3.select("#age-slider");
+    const slider_num = d3.select("#age-slider-num");
+    state.age_bin_size = Math.max(min_bin, state.age_bin_size);
+    slider.attr("min", min_bin);
+    slider.attr("value", state.age_bin_size);
+    slider_num.html(state.age_bin_size);
+
     const age_data = bin_by_age(data, state.age_bin_size);
     const age_deaths = age_data.map(d => ({...d, value: d.value.filter(person => person.Survived === 0)}));
     const age_survivors = age_data.map(d => ({...d, value: d.value.filter(person => person.Survived === 1)}));
@@ -326,6 +435,8 @@ function render_age_graph(data, state) {
     const height = graph.node().getBoundingClientRect().height;
     const margin_width = 0.1 * width;
     const margin_height = 0.1 * height;
+
+    // slider.attr("min", min_bin).property("value", state.age_bin).dispatch("input");
 
     const labels = age_data.map(d => d.label);
 
@@ -419,7 +530,7 @@ function render_passenger_id_graph(data) {
         })
         .attr("opacity", 1)
         .on("mouseenter", (event, d) => {
-            tooltip.style("opacity", 1).html(`${d.Name}<br>${(d.Survived ? "Survived" : "Deceased")}<br>${d.Age} yrs<br>Passenger Id: ${d.PassengerId}`);
+            tooltip.style("opacity", 1).html(`${d.Name}<br>${d.Sex === "male" ? "Male" : "Female"}<br>${(d.Survived ? "Survived" : "Deceased")}<br>${d.Age} yrs<br>Passenger Id: ${d.PassengerId}`);
             rects.filter(function() { return this !== event.currentTarget }).transition().duration(500).attr("opacity", 0.1);
         })
         .on("mousemove", (event) => {

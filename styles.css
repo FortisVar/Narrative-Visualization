@@ -67,7 +67,26 @@ svg {
     font: 12px sans-serif;
 }
 
+#age-slider {
+    width: 100%;
+}
 #age-slider-num {
+    display: inline-block;
+    width: 3ch;
+}
+
+#age-filter-max-slider {
+    width: 100%;
+}
+#age-filter-max-slider-num {
+    display: inline-block;
+    width: 3ch;
+}
+
+#age-filter-min-slider {
+    width: 100%;
+}
+#age-filter-min-slider-num {
     display: inline-block;
     width: 3ch;
 }
