@@ -29,6 +29,7 @@ function render_graphs(data, state) {
     render_gender_graph(data);
     render_class_graph(data);
     render_age_graph(data, state);
+    render_passenger_id_graph(data);
 }
 
 async function load_data() {
@@ -298,12 +299,6 @@ function render_age_graph(data, state) {
 
     const tooltip = d3.select("#tooltip");
 
-    console.log(age_data);
-    console.log(age_deaths);
-    console.log(age_survivors);
-    console.log(age_total_deaths);
-    console.log(age_total_survivors);
-
     graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(age_total_survivors).enter().append("rect")
         .attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
         .attr("y", d => -scale_y(d.value))
@@ -340,6 +335,46 @@ function render_age_graph(data, state) {
     graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).call(d3.axisLeft(axis_y));
 }
 
+function render_passenger_id_graph(data) {
+    const box_size = 15;
+
+    const graph = d3.select("#passenger-graph");
+    graph.selectAll("*").remove();
+
+    const width = graph.node().getBoundingClientRect().width;
+    const height = graph.node().getBoundingClientRect().height;
+    const margin_width = 0.1 * width;
+    const margin_height = 0.1 * height;
+
+    const tooltip = d3.select("#tooltip");
+
+    const row_density = 45;
+
+    const scale_x = d3.scaleLinear().domain([0, row_density - 1]).range([0, width - 2*margin_width]);
+    const scale_y = d3.scaleLinear().domain([0, row_density - 1]).range([0, width - 2*margin_width]);
+
+    graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).selectAll("rect").data(data).enter().append("rect")
+        .attr("width", box_size)
+        .attr("height", box_size)
+        .attr("x", (d, i) => scale_x(i % row_density))
+        .attr("y", (d, i) => scale_y(Math.floor(i / row_density)))
+        .attr("fill", d => {
+            if (d.Survived === 1) {
+                return "cornflowerblue";
+            } else if (d.Survived === 0) {
+                return "crimson"
+            }
+        })
+        .on("mouseenter", (event, d) => {
+            tooltip.style("opacity", 1).html(`${d.Name}<br>${(d.Survived ? "Survived" : "Deceased")}<br>${d.Age} yrs`);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+        })
+}
 
 main();
 
