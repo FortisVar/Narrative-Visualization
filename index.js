@@ -3,11 +3,29 @@ async function main() {
     process_data(data);
 
     let state = {
-        age_bin_size: 10
+        age_bin_size: 10,
+
+        filter_age_min: 0,
+        filter_age_max: 100,
+
+        filter_first_class: 1,
+        filter_second_class: 1,
+        filter_third_class: 1,
+
+        filter_male: 1,
+        filter_female: 1
     }
 
     setup_controls(state, () => render_graphs(data, state));
     render_graphs(data, state);
+}
+
+function filter_data(data, state) {
+    var filtered_data = data.map(d => ({...d}));
+
+
+
+    return filtered_data;
 }
 
 function setup_controls(state, on_change) {
@@ -25,11 +43,12 @@ function setup_controls(state, on_change) {
 }
 
 function render_graphs(data, state) {
-    render_overview_graph(data);
-    render_gender_graph(data);
-    render_class_graph(data);
-    render_age_graph(data, state);
-    render_passenger_id_graph(data);
+    let filtered_data = filter_data(data, state);
+    render_overview_graph(filtered_data);
+    render_gender_graph(filtered_data);
+    render_class_graph(filtered_data);
+    render_age_graph(filtered_data, state);
+    render_passenger_id_graph(filtered_data);
 }
 
 async function load_data() {
