@@ -3,8 +3,7 @@ body {
     color: #4b4b4b;
     background: white;
     width: 1000px;
-    margin: auto;
-    margin-top: 100px;
+    margin: 100px auto 100px;
 }
 
 h1 {
@@ -29,20 +28,14 @@ svg {
 
 #total-passengers {
     fill: dimgrey;
-    stroke: #434343;
-    stroke-width: 5px;
 }
 
 #total-survivors {
     fill: cornflowerblue;
-    stroke: #2f4670;
-    stroke-width: 5px;
 }
 
 #total-deaths {
     fill: crimson;
-    stroke: #680b1d;
-    stroke-width: 5px;
 }
 
 #total-passengers-text {
@@ -61,4 +54,20 @@ svg {
     text-anchor: middle;
     dominant-baseline: middle;
     fill: #680b1d;
+}
+
+#tooltip {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    background: #222;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font: 12px sans-serif;
+}
+
+#age-slider-num {
+    display: inline-block;
+    width: 3ch;
 }

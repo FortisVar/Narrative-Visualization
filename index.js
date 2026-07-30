@@ -1,8 +1,34 @@
-async function render_visualization() {
+async function main() {
     let data = await load_data();
     process_data(data);
+
+    let state = {
+        age_bin_size: 10
+    }
+
+    setup_controls(state, () => render_graphs(data, state));
+    render_graphs(data, state);
+}
+
+function setup_controls(state, on_change) {
+    const age_slider = document.querySelector("#age-slider");
+    const age_num = document.querySelector("#age-slider-num");
+
+    age_slider.value = state.age_bin_size;
+    age_num.textContent = state.age_bin_size;
+
+    age_slider.addEventListener("input", event => {
+        state.age_bin_size = event.target.value;
+        age_num.textContent = state.age_bin_size;
+        on_change(event);
+    });
+}
+
+function render_graphs(data, state) {
     render_overview_graph(data);
     render_gender_graph(data);
+    render_class_graph(data);
+    render_age_graph(data, state);
 }
 
 async function load_data() {
@@ -20,7 +46,8 @@ async function load_data() {
 
         const end = performance.now();
         document.getElementById("data-status").innerText = `Successfully loaded Titanic dataset in ${(end - start).toFixed(1)}ms`;
-    } catch {
+    } catch (error){
+        console.error(error);
         console.log("Failed to load CSV file");
         document.getElementById("data-status").innerText = "Failed to load Titanic dataset";
         document.getElementById("data-status").style.color = "red";
@@ -78,19 +105,20 @@ function render_gender_graph(data) {
     const total_female = total_female_filter.length;
 
     const graph = d3.select("#gender-graph");
+    graph.selectAll("*").remove();
     const width = graph.node().getBoundingClientRect().width;
     const height = graph.node().getBoundingClientRect().height;
     const margin_width = 0.1 * width;
     const margin_height = 0.1 * height;
 
     const deaths_data = [
-        {label: "Deaths", value: total_male_deaths + total_female_deaths},
+        {label: "Total Deaths", value: total_male_deaths + total_female_deaths},
         {label: "Male Deaths", value: total_male_deaths},
         {label: "Female Deaths", value: total_female_deaths}
     ];
 
     const survivors_data = [
-        {label: "Survivors", value: total_male_survivors + total_female_survivors},
+        {label: "Total Survivors", value: total_male_survivors + total_female_survivors},
         {label: "Male Survivors", value: total_male_survivors},
         {label: "Female Survivors", value: total_female_survivors}
     ];
@@ -103,9 +131,11 @@ function render_gender_graph(data) {
 
     const bar_width = 100;
 
-
     const scale_x = d3.scaleBand().domain(labels).range([0, width-2*margin_width]);
     const scale_y = d3.scaleLinear().domain([0, total_male + total_female]).range([0, height-2*margin_height]);
+    const axis_y = d3.scaleLinear().domain([0, total_male + total_female]).range([height-2*margin_height, 0]);
+
+    const tooltip = d3.select("#tooltip");
 
     graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(survivors_data).enter().append("rect")
         .attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
@@ -113,8 +143,15 @@ function render_gender_graph(data) {
         .attr("height", d => scale_y(d.value))
         .attr("width", bar_width)
         .attr("fill", "cornflowerblue")
-        .attr("stroke", "#2f4670")
-        .attr("stroke-width", 5);
+        .on("mouseenter", (event, d) => {
+            tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+        });
 
     graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(deaths_data).enter().append("rect")
         .attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
@@ -122,12 +159,187 @@ function render_gender_graph(data) {
         .attr("height", d => scale_y(d.value))
         .attr("width", bar_width)
         .attr("fill", "crimson")
-        .attr("stroke", "#680b1d")
-        .attr("stroke-width", 5);
+        .on("mouseenter", (event, d) => {
+            tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+        });
 
     graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).call(d3.axisBottom(scale_x).tickSizeOuter(0));
-    graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).call(d3.axisLeft(scale_y));
+    graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).call(d3.axisLeft(axis_y));
 }
 
-render_visualization();
+function render_class_graph(data) {
+    const class1 = data.filter(d => d.Pclass === 1);
+    const class2 = data.filter(d => d.Pclass === 2);
+    const class3 = data.filter(d => d.Pclass === 3);
+
+    const class1_deaths = class1.filter(d => d.Survived === 0).length;
+    const class2_deaths = class2.filter(d => d.Survived === 0).length;
+    const class3_deaths = class3.filter(d => d.Survived === 0).length;
+
+    const class1_survivors = class1.filter(d => d.Survived === 1).length;
+    const class2_survivors = class2.filter(d => d.Survived === 1).length;
+    const class3_survivors = class3.filter(d => d.Survived === 1).length;
+
+    const graph = d3.select("#class-graph");
+    graph.selectAll("*").remove();
+    const width = graph.node().getBoundingClientRect().width;
+    const height = graph.node().getBoundingClientRect().height;
+    const margin_width = 0.1 * width;
+    const margin_height = 0.1 * height;
+
+    const deaths_data = [
+        {label: "First class deaths", value: class1_deaths},
+        {label: "Second class deaths", value: class2_deaths},
+        {label: "Third class deaths", value: class3_deaths}
+    ];
+
+    const survivors_data = [
+        {label: "First class survivors", value: class1_survivors},
+        {label: "Second class survivors", value: class2_survivors},
+        {label: "Third class survivors", value: class3_survivors}
+    ];
+
+    const labels = [
+        "First Class",
+        "Second Class",
+        "Third Class"
+    ];
+
+    const bar_width = 100;
+
+    const max_y = Math.max(class1.length, class2.length, class3.length);
+
+    const scale_x = d3.scaleBand().domain(labels).range([0, width-2*margin_width]);
+    const scale_y = d3.scaleLinear().domain([0, max_y]).range([0, height-2*margin_height]);
+    const axis_y = d3.scaleLinear().domain([0, max_y]).range([height-2*margin_height, 0]);
+
+    const tooltip = d3.select("#tooltip");
+
+    graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(survivors_data).enter().append("rect")
+        .attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
+        .attr("y", d => -scale_y(d.value))
+        .attr("height", d => scale_y(d.value))
+        .attr("width", bar_width)
+        .attr("fill", "cornflowerblue")
+        .on("mouseenter", (event, d) => {
+            tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+        });
+
+    graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(deaths_data).enter().append("rect")
+        .attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
+        .attr("y", (d, i) => -scale_y(d.value) - scale_y(survivors_data[i].value))
+        .attr("height", d => scale_y(d.value))
+        .attr("width", bar_width)
+        .attr("fill", "crimson")
+        .on("mouseenter", (event, d) => {
+            tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);;
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+        });
+
+    graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).call(d3.axisBottom(scale_x).tickSizeOuter(0));
+    graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).call(d3.axisLeft(axis_y));
+}
+
+function bin_by_age(data, bin_size) {
+    const max_bins = d3.max(data, d => Math.floor(d.Age / bin_size)) + 1;
+    const bins = Array.from({ length: max_bins });
+    for (let i = 0; i < bins.length; i++) {
+        bins[i] = {label: `${i * bin_size}-${(i + 1) * bin_size - 1}`,
+                   value: []};
+    }
+    for (let i = 0; i < data.length; i++) {
+        let bin_i = Math.floor(data[i].Age / bin_size);
+        bins[bin_i].value.push(data[i]);
+    }
+    return bins
+}
+
+function render_age_graph(data, state) {
+    const age_data = bin_by_age(data, state.age_bin_size);
+    const age_deaths = age_data.map(d => ({...d, value: d.value.filter(person => person.Survived === 0)}));
+    const age_survivors = age_data.map(d => ({...d, value: d.value.filter(person => person.Survived === 1)}));
+    const age_total_deaths = age_deaths.map(d => ({...d, value: d.value.length}))
+    const age_total_survivors = age_survivors.map(d => ({...d, value: d.value.length}))
+
+    const graph = d3.select("#age-graph");
+    graph.selectAll("*").remove();
+    const width = graph.node().getBoundingClientRect().width;
+    const height = graph.node().getBoundingClientRect().height;
+    const margin_width = 0.1 * width;
+    const margin_height = 0.1 * height;
+
+    const labels = age_data.map(d => d.label);
+
+    const max_y = age_data.reduce((a, b) => Math.max(a, b.value.length), 0);
+
+    const scale_x = d3.scaleBand().domain(labels).range([0, width-2*margin_width]);
+
+    const scale_y = d3.scaleLinear().domain([0, max_y]).range([0, height-2*margin_height]);
+    const axis_y = d3.scaleLinear().domain([0, max_y]).range([height-2*margin_height, 0]);
+
+    const bar_width = (scale_y.range()[1] - scale_y.range()[0]) / age_data.length;
+
+    const tooltip = d3.select("#tooltip");
+
+    console.log(age_data);
+    console.log(age_deaths);
+    console.log(age_survivors);
+    console.log(age_total_deaths);
+    console.log(age_total_survivors);
+
+    graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(age_total_survivors).enter().append("rect")
+        .attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
+        .attr("y", d => -scale_y(d.value))
+        .attr("height", d => scale_y(d.value))
+        .attr("width", bar_width)
+        .attr("fill", "cornflowerblue")
+        .on("mouseenter", (event, d) => {
+            tooltip.style("opacity", 1).html(`Survivors ${d.label}:<br>${d.value}`);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+        });
+
+    graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(age_total_deaths).enter().append("rect")
+        .attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
+        .attr("y", (d, i) => -scale_y(d.value) - scale_y(age_total_survivors[i].value))
+        .attr("height", d => scale_y(d.value))
+        .attr("width", bar_width)
+        .attr("fill", "crimson")
+        .on("mouseenter", (event, d) => {
+            tooltip.style("opacity", 1).html(`Deaths ${d.label}:<br>${d.value}`);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+        });
+
+    graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).call(d3.axisBottom(scale_x).tickSizeOuter(0));
+    graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).call(d3.axisLeft(axis_y));
+}
+
+
+main();
 

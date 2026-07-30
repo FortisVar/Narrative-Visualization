@@ -11,8 +11,9 @@
 
     <p id="data-status"></p>
 
-    <h2>Overview Graph</h2>
+    <div id="tooltip"></div>
 
+    <h2>Overview Graph</h2>
     <svg id="overview-graph">
         <circle id="total-passengers"></circle>
         <text id="total-passengers-text"></text>
@@ -25,9 +26,19 @@
     </svg>
 
     <h2>Gender Graph</h2>
+    <svg id="gender-graph"></svg>
 
-    <svg id="gender-graph">
-    </svg>
+    <h2>Class Graph</h2>
+    <svg id="class-graph"></svg>
+
+    <h2>Age Graph</h2>
+    <svg id="age-graph"></svg>
+
+    <label>
+        Age bins:<span id="age-slider-num">10</span>
+        <input id="age-slider" type="range" min="3" max="30" value="10" step="1">
+    </label>
+
 
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="index.js"></script>
