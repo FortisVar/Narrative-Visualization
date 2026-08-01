@@ -248,13 +248,88 @@ function render_overview_graph(data) {
     const margin_width = 0.2 * width;
     const scale_x = d3.scaleLinear().domain([0, 2]).range([margin_width, width - margin_width]);
 
-    graph.select("#total-passengers").attr("r", scale_r(total_passengers)).attr("cx", scale_x(0)).attr("cy", height / 2);
-    graph.select("#total-survivors").attr("r", scale_r(total_survivors)).attr("cx", scale_x(1)).attr("cy", height / 2);
-    graph.select("#total-deaths").attr("r", scale_r(total_deaths)).attr("cx", scale_x(2)).attr("cy", height / 2);
+    const tooltip = d3.select("#tooltip");
 
-    graph.select("#total-passengers-text").text(`${total_passengers} Passengers`).attr("x", scale_x(0)).attr("y", height / 2).attr("font-size", scale_r(total_passengers) / 5);
-    graph.select("#total-survivors-text").text(`${total_survivors} Survivors`).attr("x", scale_x(1)).attr("y", height / 2).attr("font-size", scale_r(total_survivors) / 5);
-    graph.select("#total-deaths-text").text(`${total_deaths} Deaths`).attr("x", scale_x(2)).attr("y", height / 2).attr("font-size", scale_r(total_deaths) / 5);
+
+    graph.select("#total-passengers").attr("r", scale_r(total_passengers)).attr("cx", scale_x(0)).attr("cy", height / 2)
+        .attr("opacity", 1)
+        .on("mouseenter", (event) => {
+            tooltip.style("opacity", 1).html(`${total_passengers} Passengers<br>100.0%`);
+            graph.select("#total-passengers").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-survivors").transition().duration(500).attr("opacity", 0.1);
+            graph.select("#total-deaths").transition().duration(500).attr("opacity", 0.1);
+
+            graph.select("#total-passengers-text").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-survivors-text").transition().duration(500).attr("opacity", 0.1);
+            graph.select("#total-deaths-text").transition().duration(500).attr("opacity", 0.1);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+            graph.select("#total-passengers").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-survivors").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-deaths").transition().duration(500).attr("opacity", 1);
+
+            graph.select("#total-passengers-text").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-survivors-text").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-deaths-text").transition().duration(500).attr("opacity", 1);
+        });
+    graph.select("#total-survivors").attr("r", scale_r(total_survivors)).attr("cx", scale_x(1)).attr("cy", height / 2)
+        .attr("opacity", 1)
+        .on("mouseenter", (event) => {
+            tooltip.style("opacity", 1).html(`${total_survivors} Survivors<br>${(total_survivors / total_passengers * 100).toFixed(1)}%`);
+            graph.select("#total-passengers").transition().duration(500).attr("opacity", 0.1);
+            graph.select("#total-survivors").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-deaths").transition().duration(500).attr("opacity", 0.1);
+
+            graph.select("#total-passengers-text").transition().duration(500).attr("opacity", 0.1);
+            graph.select("#total-survivors-text").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-deaths-text").transition().duration(500).attr("opacity", 0.1);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+            graph.select("#total-passengers").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-survivors").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-deaths").transition().duration(500).attr("opacity", 1);
+
+            graph.select("#total-passengers-text").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-survivors-text").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-deaths-text").transition().duration(500).attr("opacity", 1);
+        });
+    graph.select("#total-deaths").attr("r", scale_r(total_deaths)).attr("cx", scale_x(2)).attr("cy", height / 2)
+        .attr("opacity", 1)
+        .on("mouseenter", (event) => {
+            tooltip.style("opacity", 1).html(`${total_deaths} Deaths<br>${(total_deaths/total_passengers*100).toFixed(1)}%`);
+            graph.select("#total-passengers").transition().duration(500).attr("opacity", 0.1);
+            graph.select("#total-survivors").transition().duration(500).attr("opacity", 0.1);
+            graph.select("#total-deaths").transition().duration(500).attr("opacity", 1);
+
+            graph.select("#total-passengers-text").transition().duration(500).attr("opacity", 0.1);
+            graph.select("#total-survivors-text").transition().duration(500).attr("opacity", 0.1);
+            graph.select("#total-deaths-text").transition().duration(500).attr("opacity", 1);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+        })
+        .on("mouseleave", () => {
+            tooltip.style("opacity", 0);
+            graph.select("#total-passengers").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-survivors").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-deaths").transition().duration(500).attr("opacity", 1);
+
+            graph.select("#total-passengers-text").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-survivors-text").transition().duration(500).attr("opacity", 1);
+            graph.select("#total-deaths-text").transition().duration(500).attr("opacity", 1);
+        });
+
+    graph.select("#total-passengers-text").text(`${total_passengers} Passengers`).attr("x", scale_x(0)).attr("y", height / 2).attr("font-size", scale_r(total_passengers) / 5).attr("opacity", 1);
+    graph.select("#total-survivors-text").text(`${total_survivors} Survivors`).attr("x", scale_x(1)).attr("y", height / 2).attr("font-size", scale_r(total_survivors) / 5).attr("opacity", 1);
+    graph.select("#total-deaths-text").text(`${total_deaths} Deaths`).attr("x", scale_x(2)).attr("y", height / 2).attr("font-size", scale_r(total_deaths) / 5).attr("opacity", 1);
 }
 
 function render_gender_graph(data) {
