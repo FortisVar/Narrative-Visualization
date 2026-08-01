@@ -6,89 +6,134 @@
 
     <link rel="stylesheet" href="styles.css"></head>
 <body>
-
     <h1>Titanic Narrative Visualization</h1>
-
-    <p id="data-status"></p>
 
     <div id="tooltip"></div>
 
-    <h2>Overview Graph</h2>
-    <svg id="overview-graph">
-        <circle id="total-passengers"></circle>
-        <text id="total-passengers-text"></text>
+    <div id="intro-scene" class="scene">
+        <p id="data-status"></p>
+        <h2>Narrative Overview</h2>
+        <p>
+            This website is dedicated to exploring, analyzing, and visualizing the statistics of the passengers on the Titanic. The link to the raw Titanic.csv file can be found either on this projects github or the file's original source<br>
+            Github: <a href="https://fortisvar.github.io/Narrative-Visualization/titanic.csv">here</a><br>
+            Source: <a href="https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/titanic.csv">here</a><br>
+            <br>
+            Each scene will focus on a specific trend when analyzing the dataset with a certain perspective. At the end of the narrative there will be options to further filter the data to explore it in more depth.<br>
+            <br>
+            This scene displays the distribution of the total number of passengers, survivors, and deaths on the Titanic. The area of each circle correlates to the respective statistic.
+        </p>
 
-        <circle id="total-survivors"></circle>
-        <text id="total-survivors-text"></text>
+        <h2>Overview Graph</h2>
+        <svg id="overview-graph">
+            <circle id="total-passengers"></circle>
+            <text id="total-passengers-text"></text>
 
-        <circle id="total-deaths"></circle>
-        <text id="total-deaths-text"></text>
-    </svg>
+            <circle id="total-survivors"></circle>
+            <text id="total-survivors-text"></text>
 
-    <h2>Gender Graph</h2>
-    <svg id="gender-graph"></svg>
+            <circle id="total-deaths"></circle>
+            <text id="total-deaths-text"></text>
+        </svg>
+    </div>
 
-    <h2>Class Graph</h2>
-    <svg id="class-graph"></svg>
+    <div id="gender-scene" class="scene">
+        <h2>Survivors and Deaths by Gender</h2>
+        <p>
+            In this scene we can see a stacked bar chart showing the number of survivors and deaths for everyone, males only, and females only. Compared to each other we can see that proportionally that more males died than females. This may have to do to the fact that men would help women and children before their own survival
+        </p>
 
-    <h2>Age Graph</h2>
-    <svg id="age-graph"></svg>
+        <h2>Gender Graph</h2>
+        <svg id="gender-graph"></svg>
+    </div>
 
-    <label>
-        Age bins:<span id="age-slider-num">10</span>
-        <input id="age-slider" type="range" min="3" max="30" value="10" step="1">
-    </label>
+    <div id="class-scene" class="scene">
+        <h2>Survivors and Deaths by Class</h2>
+        <p>
+            In this scene we can see a stacked bar chart showing the number of survivors and deaths for each class of ticket for the Titanic. This Graph demonstrates that the better class ticket a passenger had the more likely they were to survive. This is likely due to the fact that first class passengers were closer to lifeboats and were closer to the upper deck, while lower class tickets were further from the upper deck.
+        </p>
 
-    <h2>Passenger Graph</h2>
-    <svg id="passenger-graph"></svg>
+        <h2>Class Graph</h2>
+        <svg id="class-graph"></svg>
+    </div>
 
-    <h2>Filter Options</h2>
+    <div id="age-scene" class="scene">
+        <h2>Survivors and Deaths by Age</h2>
+        <p>
+            In this scene we can see a stacked bar chart showing the number of survivors and deaths for each age bin for the Titanic. In this graph the correlation of age and survival is a weaker metric, however trends can still be derived from the data. Younger groups seemed to have a better rate of survival while older groups had higher rates of death.
+        </p>
 
-    <label>
-        Age max:<span id="age-filter-max-slider-num">100</span>
-        <input id="age-filter-max-slider" type="range" min="0" max="100" value="100" step="1">
-    </label>
+        <h2>Age Graph</h2>
+        <svg id="age-graph"></svg>
 
-    <br>
+        <label>
+            Age bins:<span id="age-slider-num">10</span>
+            <input id="age-slider" type="range" min="3" max="30" value="10" step="1">
+        </label>
+    </div>
 
-    <label>
-        Age min:<span id="age-filter-min-slider-num">0</span>
-        <input id="age-filter-min-slider" type="range" min="0" max="100" value="0" step="1">
-    </label>
+    <div id="passengers-scene" class="scene">
+        <h2>Survivors and Deaths per Passenger</h2>
+        <p>
+            In this scene we can see specific people, their informations, and if they survived. This graph puts in to perspective the survivors and deaths on the Titanic. This graph will later be able to be filtered to focus different groups of passengers.
+        </p>
 
-    <br>
-    <br>
+        <h2>Passenger Graph</h2>
+        <svg id="passenger-graph"></svg>
+    </div>
 
-    <label>
-        <span>First Class</span>
-        <input id="first-class-filter" type="checkbox">
-    </label>
+    <div id="filter-scene" class="scene">
+        <h2>Further Filtering Data</h2>
+        <p>
+            This scene is about filtering the following filter options are now at the bottom of the screen allowing for further filtering of data. The filtering options are now available at the bottom of every scene to filter the data within each graph. Feel free to go back to previous scenes and drill deeper and explore filtered data.
+        </p>
+    </div>
 
-    <label>
-        <span>Second Class</span>
-        <input id="second-class-filter" type="checkbox">
-    </label>
+    <div id="filter-options">
+        <h2>Filter Options</h2>
 
-    <label>
-        <span>Third Class</span>
-        <input id="third-class-filter" type="checkbox">
-    </label>
+        <label>
+            Age max:<span id="age-filter-max-slider-num">100</span>
+            <input id="age-filter-max-slider" type="range" min="0" max="100" value="100" step="1">
+        </label>
+        <br>
+        <label>
+            Age min:<span id="age-filter-min-slider-num">0</span>
+            <input id="age-filter-min-slider" type="range" min="0" max="100" value="0" step="1">
+        </label>
 
-    <br>
-    <br>
+        <br>
+        <br>
 
-    <label>
-        <span>Male</span>
-        <input id="male-filter" type="checkbox">
-    </label>
+        <label>
+            <span>First Class</span>
+            <input id="first-class-filter" type="checkbox">
+        </label>
+        <label>
+            <span>Second Class</span>
+            <input id="second-class-filter" type="checkbox">
+        </label>
+        <label>
+            <span>Third Class</span>
+            <input id="third-class-filter" type="checkbox">
+        </label>
 
-    <label>
-        <span>Female</span>
-        <input id="female-filter" type="checkbox">
-    </label>
+        <br>
+        <br>
 
+        <label>
+            <span>Male</span>
+            <input id="male-filter" type="checkbox">
+        </label>
+        <label>
+            <span>Female</span>
+            <input id="female-filter" type="checkbox">
+        </label>
+    </div>
 
-
+    <div id="navigation-buttons">
+        <button id="prev-button">Prev Scene</button>
+        <button id="next-button">Next Scene</button>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="index.js"></script>

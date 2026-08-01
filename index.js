@@ -1,8 +1,8 @@
 async function main() {
-    let data = await load_data();
-    process_data(data);
-
     let state = {
+        scene_num: 0,
+        filters_shown: 0,
+
         age_bin_size: 10,
 
         filter_age_min: 0,
@@ -16,8 +16,35 @@ async function main() {
         filter_female: 1
     }
 
-    setup_controls(state, () => render_graphs(data, state));
+    const scene_ids = [
+        "#intro-scene",
+        "#gender-scene",
+        "#class-scene",
+        "#age-scene",
+        "#passengers-scene",
+        "#filter-scene"
+    ]
+
+    let data = await load_data();
+    process_data(data);
+
+    setup_controls(state, scene_ids, () => render_graphs(data, state));
     render_graphs(data, state);
+}
+
+function update_scenes(scene_ids, state) {
+    d3.selectAll(".scene").style("display", "none");
+    d3.select(scene_ids[state.scene_num]).style("display", "block");
+    d3.select("#prev-button").property("disabled", state.scene_num === 0);
+    if(state.scene_num === scene_ids.length - 1) {
+        d3.select("#next-button").html("Restart With Filters")
+    } else {
+        d3.select("#next-button").html("Next Scene")
+    }
+    if(scene_ids[state.scene_num] === "#filter-scene") {
+        state.filters_shown = 1;
+    }
+    d3.select("#filter-options").style("display", state.filters_shown ? "block" : "none");
 }
 
 function filter_data(data, state) {
@@ -26,7 +53,7 @@ function filter_data(data, state) {
         .filter(d => d.Sex === "male" && state.filter_male || d.Sex === "female" && state.filter_female);
 }
 
-function setup_controls(state, on_change) {
+function setup_controls(state, scene_ids, on_change) {
     const age_slider = document.querySelector("#age-slider");
     const age_num = document.querySelector("#age-slider-num");
 
@@ -139,6 +166,25 @@ function setup_controls(state, on_change) {
             state.filter_female = is_checked;
             on_change();
         }
+    })
+
+    const next_button = document.querySelector("#next-button");
+    const prev_button = document.querySelector("#prev-button");
+
+    update_scenes(scene_ids, state);
+
+    next_button.addEventListener("click", event => {
+        state.scene_num = ++state.scene_num % scene_ids.length;
+        console.log(state.scene_num);
+        update_scenes(scene_ids, state);
+        on_change();
+    })
+
+    prev_button.addEventListener("click", event => {
+        state.scene_num = Math.max(--state.scene_num, 0);
+        console.log(state.scene_num);
+        update_scenes(scene_ids, state);
+        on_change();
     })
 }
 
