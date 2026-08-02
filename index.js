@@ -374,9 +374,11 @@ function render_gender_graph(data, state) {
 
     const bar_width = 100;
 
+    const max_y = total_male + total_female;
+
     const scale_x = d3.scaleBand().domain(labels).range([0, width-2*margin_width]);
-    const scale_y = d3.scaleLinear().domain([0, total_male + total_female]).range([0, height-2*margin_height]);
-    const axis_y = d3.scaleLinear().domain([0, total_male + total_female]).range([height-2*margin_height, 0]);
+    const scale_y = d3.scaleLinear().domain([0, max_y]).range([0, height-2*margin_height]);
+    const axis_y = d3.scaleLinear().domain([0, max_y]).range([height-2*margin_height, 0]);
 
     const tooltip = d3.select("#tooltip");
 
@@ -384,48 +386,54 @@ function render_gender_graph(data, state) {
         graph.append("text").attr("class", "annotation").text("Males had more deaths than females proportionally").attr("x", width / 3).attr("y", height / 15);
     }
 
-    const survivor_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(survivors_data).enter().append("rect");
-    const death_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(deaths_data).enter().append("rect")
+    if(max_y !== 0) {
+        const survivor_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(survivors_data).enter().append("rect");
+        const death_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(deaths_data).enter().append("rect")
 
-    survivor_rects.attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
-        .attr("y", d => -scale_y(d.value))
-        .attr("height", d => scale_y(d.value))
-        .attr("width", bar_width)
-        .attr("fill", "cornflowerblue")
-        .attr("opacity", 1)
-        .on("mouseenter", (event, d) => {
-            tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
-            survivor_rects.filter(function() { return this !== event.currentTarget }).transition().duration(500).attr("opacity", 0.1);
-            death_rects.transition().duration(500).attr("opacity", 0.1);
-        })
-        .on("mousemove", (event) => {
-            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
-        })
-        .on("mouseleave", () => {
-            tooltip.style("opacity", 0);
-            survivor_rects.transition().duration(500).attr("opacity", 1);
-            death_rects.transition().duration(500).attr("opacity", 1);
-        });
+        survivor_rects.attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth() / 2 - bar_width / 2)
+            .attr("y", d => -scale_y(d.value))
+            .attr("height", d => scale_y(d.value))
+            .attr("width", bar_width)
+            .attr("fill", "cornflowerblue")
+            .attr("opacity", 1)
+            .on("mouseenter", (event, d) => {
+                tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
+                survivor_rects.filter(function () {
+                    return this !== event.currentTarget
+                }).transition().duration(500).attr("opacity", 0.1);
+                death_rects.transition().duration(500).attr("opacity", 0.1);
+            })
+            .on("mousemove", (event) => {
+                tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+            })
+            .on("mouseleave", () => {
+                tooltip.style("opacity", 0);
+                survivor_rects.transition().duration(500).attr("opacity", 1);
+                death_rects.transition().duration(500).attr("opacity", 1);
+            });
 
-    death_rects.attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
-        .attr("y", (d, i) => -scale_y(d.value) - scale_y(survivors_data[i].value))
-        .attr("height", d => scale_y(d.value))
-        .attr("width", bar_width)
-        .attr("fill", "crimson")
-        .attr("opacity", 1)
-        .on("mouseenter", (event, d) => {
-            tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
-            death_rects.filter(function() { return this !== event.currentTarget }).transition().duration(500).attr("opacity", 0.1);
-            survivor_rects.transition().duration(500).attr("opacity", 0.1);
-        })
-        .on("mousemove", (event) => {
-            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
-        })
-        .on("mouseleave", () => {
-            tooltip.style("opacity", 0);
-            death_rects.transition().duration(500).attr("opacity", 1);
-            survivor_rects.transition().duration(500).attr("opacity", 1);
-        });
+        death_rects.attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth() / 2 - bar_width / 2)
+            .attr("y", (d, i) => -scale_y(d.value) - scale_y(survivors_data[i].value))
+            .attr("height", d => scale_y(d.value))
+            .attr("width", bar_width)
+            .attr("fill", "crimson")
+            .attr("opacity", 1)
+            .on("mouseenter", (event, d) => {
+                tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
+                death_rects.filter(function () {
+                    return this !== event.currentTarget
+                }).transition().duration(500).attr("opacity", 0.1);
+                survivor_rects.transition().duration(500).attr("opacity", 0.1);
+            })
+            .on("mousemove", (event) => {
+                tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+            })
+            .on("mouseleave", () => {
+                tooltip.style("opacity", 0);
+                death_rects.transition().duration(500).attr("opacity", 1);
+                survivor_rects.transition().duration(500).attr("opacity", 1);
+            });
+    }
 
     graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).call(d3.axisBottom(scale_x).tickSizeOuter(0));
     graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).call(d3.axisLeft(axis_y));
@@ -483,49 +491,54 @@ function render_class_graph(data, state) {
         graph.append("text").attr("class", "annotation").text("Higher classes have better rates of survival").attr("x", width / 3).attr("y", height / 15);
     }
 
-    const survivor_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(survivors_data).enter().append("rect");
-    const death_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(deaths_data).enter().append("rect")
+    if(max_y !== 0) {
+        const survivor_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(survivors_data).enter().append("rect");
+        const death_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(deaths_data).enter().append("rect")
 
-    survivor_rects.attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
-        .attr("y", d => -scale_y(d.value))
-        .attr("height", d => scale_y(d.value))
-        .attr("width", bar_width)
-        .attr("fill", "cornflowerblue")
-        .attr("opacity", 1)
-        .on("mouseenter", (event, d) => {
-            tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
-            survivor_rects.filter(function() { return this !== event.currentTarget }).transition().duration(500).attr("opacity", 0.1);
-            death_rects.transition().duration(500).attr("opacity", 0.1);
-        })
-        .on("mousemove", (event) => {
-            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
-        })
-        .on("mouseleave", () => {
-            tooltip.style("opacity", 0);
-            survivor_rects.transition().duration(500).attr("opacity", 1);
-            death_rects.transition().duration(500).attr("opacity", 1);
-        });
+        survivor_rects.attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth() / 2 - bar_width / 2)
+            .attr("y", d => -scale_y(d.value))
+            .attr("height", d => scale_y(d.value))
+            .attr("width", bar_width)
+            .attr("fill", "cornflowerblue")
+            .attr("opacity", 1)
+            .on("mouseenter", (event, d) => {
+                tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
+                survivor_rects.filter(function () {
+                    return this !== event.currentTarget
+                }).transition().duration(500).attr("opacity", 0.1);
+                death_rects.transition().duration(500).attr("opacity", 0.1);
+            })
+            .on("mousemove", (event) => {
+                tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+            })
+            .on("mouseleave", () => {
+                tooltip.style("opacity", 0);
+                survivor_rects.transition().duration(500).attr("opacity", 1);
+                death_rects.transition().duration(500).attr("opacity", 1);
+            });
 
-    death_rects.attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth()/2 - bar_width/2)
-        .attr("y", (d, i) => -scale_y(d.value) - scale_y(survivors_data[i].value))
-        .attr("height", d => scale_y(d.value))
-        .attr("width", bar_width)
-        .attr("fill", "crimson")
-        .attr("opacity", 1)
-        .on("mouseenter", (event, d) => {
-            tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
-            death_rects.filter(function() { return this !== event.currentTarget }).transition().duration(500).attr("opacity", 0.1);
-            survivor_rects.transition().duration(500).attr("opacity", 0.1);
-        })
-        .on("mousemove", (event) => {
-            tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
-        })
-        .on("mouseleave", () => {
-            tooltip.style("opacity", 0);
-            death_rects.transition().duration(500).attr("opacity", 1);
-            survivor_rects.transition().duration(500).attr("opacity", 1);
-        });
-
+        death_rects.attr("x", (d, i) => scale_x(labels[i]) + scale_x.bandwidth() / 2 - bar_width / 2)
+            .attr("y", (d, i) => -scale_y(d.value) - scale_y(survivors_data[i].value))
+            .attr("height", d => scale_y(d.value))
+            .attr("width", bar_width)
+            .attr("fill", "crimson")
+            .attr("opacity", 1)
+            .on("mouseenter", (event, d) => {
+                tooltip.style("opacity", 1).html(`${d.label}:<br>${d.value}`);
+                death_rects.filter(function () {
+                    return this !== event.currentTarget
+                }).transition().duration(500).attr("opacity", 0.1);
+                survivor_rects.transition().duration(500).attr("opacity", 0.1);
+            })
+            .on("mousemove", (event) => {
+                tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY + 12}px`);
+            })
+            .on("mouseleave", () => {
+                tooltip.style("opacity", 0);
+                death_rects.transition().duration(500).attr("opacity", 1);
+                survivor_rects.transition().duration(500).attr("opacity", 1);
+            });
+    }
     graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).call(d3.axisBottom(scale_x).tickSizeOuter(0));
     graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).call(d3.axisLeft(axis_y));
 }
