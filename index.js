@@ -3,6 +3,8 @@ async function main() {
         scene_num: 0,
         filters_shown: 0,
 
+        annotations_shown: 1,
+
         age_bin_size: 10,
 
         filter_age_min: 0,
@@ -43,6 +45,7 @@ function update_scenes(scene_ids, state) {
     }
     if(scene_ids[state.scene_num] === "#filter-scene") {
         state.filters_shown = 1;
+        state.annotations_shown = 0;
     }
     d3.select("#filter-options").style("display", state.filters_shown ? "block" : "none");
 }
@@ -191,8 +194,8 @@ function setup_controls(state, scene_ids, on_change) {
 function render_graphs(data, state) {
     let filtered_data = filter_data(data, state);
     render_overview_graph(filtered_data);
-    render_gender_graph(filtered_data);
-    render_class_graph(filtered_data);
+    render_gender_graph(filtered_data, state);
+    render_class_graph(filtered_data, state);
     render_age_graph(filtered_data, state);
     render_passenger_id_graph(filtered_data);
 }
@@ -249,7 +252,6 @@ function render_overview_graph(data) {
     const scale_x = d3.scaleLinear().domain([0, 2]).range([margin_width, width - margin_width]);
 
     const tooltip = d3.select("#tooltip");
-
 
     graph.select("#total-passengers").attr("r", scale_r(total_passengers)).attr("cx", scale_x(0)).attr("cy", height / 2)
         .attr("opacity", 1)
@@ -332,7 +334,7 @@ function render_overview_graph(data) {
     graph.select("#total-deaths-text").text(`${total_deaths} Deaths`).attr("x", scale_x(2)).attr("y", height / 2).attr("font-size", scale_r(total_deaths) / 5).attr("opacity", 1);
 }
 
-function render_gender_graph(data) {
+function render_gender_graph(data, state) {
     const total_male_filter = data.filter(d => d.Sex === "male");
     const total_female_filter = data.filter(d => d.Sex === "female");
 
@@ -377,6 +379,10 @@ function render_gender_graph(data) {
     const axis_y = d3.scaleLinear().domain([0, total_male + total_female]).range([height-2*margin_height, 0]);
 
     const tooltip = d3.select("#tooltip");
+
+    if(state.annotations_shown) {
+        graph.append("text").attr("class", "annotation").text("Males had more deaths than females proportionally").attr("x", width / 3).attr("y", height / 15);
+    }
 
     const survivor_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(survivors_data).enter().append("rect");
     const death_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(deaths_data).enter().append("rect")
@@ -425,7 +431,7 @@ function render_gender_graph(data) {
     graph.append("g").attr("transform", `translate(${margin_width}, ${margin_height})`).call(d3.axisLeft(axis_y));
 }
 
-function render_class_graph(data) {
+function render_class_graph(data, state) {
     const class1 = data.filter(d => d.Pclass === 1);
     const class2 = data.filter(d => d.Pclass === 2);
     const class3 = data.filter(d => d.Pclass === 3);
@@ -472,6 +478,10 @@ function render_class_graph(data) {
     const axis_y = d3.scaleLinear().domain([0, max_y]).range([height-2*margin_height, 0]);
 
     const tooltip = d3.select("#tooltip");
+
+    if(state.annotations_shown) {
+        graph.append("text").attr("class", "annotation").text("Higher classes have better rates of survival").attr("x", width / 3).attr("y", height / 15);
+    }
 
     const survivor_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(survivors_data).enter().append("rect");
     const death_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(deaths_data).enter().append("rect")
@@ -571,6 +581,10 @@ function render_age_graph(data, state) {
     const bar_width = (scale_y.range()[1] - scale_y.range()[0]) / age_data.length;
 
     const tooltip = d3.select("#tooltip");
+
+    if(state.annotations_shown) {
+        graph.append("text").attr("class", "annotation").text("Younger passengers have better survival rates").attr("x", width / 3).attr("y", height / 15);
+    }
 
     const death_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(age_total_deaths).enter().append("rect");
     const survivor_rects = graph.append("g").attr("transform", `translate(${margin_width}, ${height - margin_height})`).selectAll("rect").data(age_total_survivors).enter().append("rect");
